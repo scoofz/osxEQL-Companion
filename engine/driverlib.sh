@@ -13,9 +13,9 @@ TARBALL="$WS/crossover-sources-${CX_VERSION}.tar.gz"
 WORK="$WS/overlay-${CX_VERSION//./}"
 WINESRC="$WORK/sources/wine"
 BUILD="$WORK/build-winemac"                     # name kept: existing trees stay reusable
-# The installed app: osxEQL-Buddy.app (1.0+), or a pre-1.0 osxEQL.app.
+# The installed app: osxEQL-Companion.app, else osxEQL-Buddy.app / osxEQL.app (same runtime).
 if [ -z "${OSXEQL_APP:-}" ]; then
-    for OSXEQL_APP in /Applications/osxEQL-Buddy.app /Applications/osxEQL.app; do
+    for OSXEQL_APP in /Applications/osxEQL-Companion.app /Applications/osxEQL-Buddy.app /Applications/osxEQL.app; do
         [ -d "$OSXEQL_APP" ] && break
     done
 fi
@@ -71,7 +71,7 @@ revert_driver() {
     log "restored: $so"
 }
 
-game_running() { pgrep -f 'eqgame|LaunchPad|EQBuddy\.exe' >/dev/null; }
+game_running() { pgrep -f 'eqgame|LaunchPad|EQ Legends Companion\.exe|everquest-companion\.exe' >/dev/null; }
 
 find_bison() {
     local b

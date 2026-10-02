@@ -2,8 +2,8 @@
 # Launch EQL: starts the Daybreak LaunchPad (which authenticates, then spawns the
 # 64-bit eqgame.exe). Runs in a Wine virtual desktop to avoid the launcher's
 # splash-window deadlock. One-shot — NO kill/retry loops (hard rule).
-HERE="$(cd "$(dirname "$0")" && pwd)"; . "$HERE/lib.sh"; . "$HERE/eqbuddy.sh"; . "$HERE/eqlcompanion.sh"
-EQBUDDY_FOCUS_SRC="$HERE/tools/eqbuddy-focus.swift"
+HERE="$(cd "$(dirname "$0")" && pwd)"; . "$HERE/lib.sh"; . "$HERE/companion.sh"; . "$HERE/eqlcompanion.sh"
+COMPANION_FOCUS_SRC="$HERE/tools/companion-focus.swift"
 have_wine   || die "wine not staged"
 have_prefix || die "no prefix — run setup first"
 have_eq     || die "EQL not installed in prefix ($EQ_UNIXDIR). Run: osxeql install  (or import-client)"
@@ -27,10 +27,9 @@ resolve_size
 log "game window: ${OSXEQL_W}x${OSXEQL_H} (osxeql res to change)"
 pin_eqclient "$OSXEQL_W" "$OSXEQL_H" "$OSXEQL_FULLDISPLAY"
 cd "$EQ_UNIXDIR" || die "cd to EQ dir failed"
-# EQBuddy Evolved companion, if installed + enabled (osxeql eqbuddy) — same desktop.
-# Its own log: the exec below truncates $launchlog, which used to erase these lines.
-echo "==== $(date) ====" >> "$LOGDIR/eqbuddy.log"
-eqbuddy_update_and_launch "$OSXEQL_W" "$OSXEQL_H" "$LOGDIR/eqbuddy.log"   # background
-eqlc_update_and_launch "$LOGDIR/eqlc.log"                                   # background
+# EQ Legends Companion, if enabled (osxeql eqlc). Its own log: the exec below
+# truncates $launchlog.
+echo "==== $(date) ====" >> "$LOGDIR/eqlc.log"
+eqlc_update_and_launch "$LOGDIR/eqlc.log"   # background
 exec "$WINE" explorer "/desktop=osxEQL,${OSXEQL_W}x${OSXEQL_H}" \
     "$EQ_WINDIR\\LaunchPad.exe" >"$launchlog" 2>&1

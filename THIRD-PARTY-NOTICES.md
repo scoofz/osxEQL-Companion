@@ -40,9 +40,9 @@ protection on the game.
 This project is an unofficial, fan-made compatibility tool and is not affiliated
 with, endorsed by, or supported by Daybreak Game Company, CodeWeavers, or Apple.
 
-## Modifications to the Wine runtime (osxEQL-Buddy)
+## Modifications to the Wine runtime (osxEQL-Buddy / osxEQL-Companion)
 
-The Wine runtime shipped by osxEQL-Buddy is CodeWeavers' source with two changes, both
+The Wine runtime shipped by osxEQL-Companion (identical to osxEQL-Buddy's) is CodeWeavers' source with two changes, both
 published here as source (LGPL-2.1, like Wine): the winemac.drv overlay patch below
 (`engine/patches/winemac-overlay.patch`) and the winecoreaudio.drv "follow the default
 output" change (`engine/patches/coreaudio-follow-default.py`, which edits
@@ -61,10 +61,7 @@ release's `scripts/crossover/setup-overlay.sh`, and `engine/tools/winlevels.m`
 - License: MIT (https://github.com/DranakCorps-bot/EQBuddy/blob/v1.99.18/LICENSE).
 - Source: https://github.com/DranakCorps-bot/EQBuddy/tree/v1.99.18/scripts/crossover
 
-EQBuddy Evolved itself is a separate, proprietary program. osxEQL does not include
-or redistribute it; `engine/eqbuddy.sh` downloads the official release on request.
-
 EQ Legends Companion (https://github.com/jmoyers/everquest-companion, © Josh Moyers,
-FSL-1.1-MIT) is likewise a separate program that osxEQL-Buddy does not include or
+FSL-1.1-MIT) is a separate program that osxEQL-Companion does not include or
 redistribute; `engine/eqlcompanion.sh` downloads its official release on request,
 verifies it against the SHA-512 in the release's `latest.yml`, and runs it unmodified.

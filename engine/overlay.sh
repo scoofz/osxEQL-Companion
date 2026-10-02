@@ -1,12 +1,12 @@
 #!/bin/bash
-# Let EQBuddy (or any opted-in topmost window) float over the FULLSCREEN game.
+# Let the companion's overlays (any opted-in topmost window) float over the FULLSCREEN game.
 #
 # Why: when EQ runs fullscreen, macOS puts its window at a level no ordinary
-# topmost window can beat, so EQBuddy's own window disappears behind it (it only
+# topmost window can beat, so the companion's windows disappear behind it (they only
 # shows again once the game goes windowed). engine/patches/winemac-overlay.patch
 # adds an opt-in per-app knob to winemac.drv (LetTopmostWindowsFloatOverFullscreen)
-# that lifts such a window above the fullscreen level. EQBuddy writes that knob for
-# itself from its WineFloatOverFullscreen setting, which engine/eqbuddy.sh turns on.
+# that lifts such a window above the fullscreen level. engine/eqlcompanion.sh writes
+# that knob for the companion's exe before it starts. (Patch from EQBuddy 1.99.18, MIT.)
 #
 # This rebuilds ONLY winemac.so — from the same CodeWeavers CrossOver source the
 # runtime was built from (engine/build-wine.sh), plus the patch — and swaps it into
@@ -17,7 +17,7 @@
 #   engine/overlay.sh --revert   restore the original winemac.so
 #   engine/overlay.sh --status   show whether each runtime is patched
 #
-# Runtimes touched: $WINE_DIR (the engine's) and the installed app's (osxEQL-Buddy.app or osxEQL.app) embedded
+# Runtimes touched: $WINE_DIR (the engine's) and the installed app's (osxEQL-Companion.app, osxEQL-Buddy.app or osxEQL.app) embedded
 # one — each only once if one is a symlink to the other. An .app is re-signed
 # ad-hoc afterwards (editing a bundle file breaks its signature).
 # Requires: Xcode command-line tools, and bison >= 3 (brew install bison).
@@ -72,11 +72,11 @@ case "${1:-}" in
         done <<< "$rts"
         ;;
     --revert)
-        game_running && die "quit the game and EQBuddy first"
+        game_running && die "quit the game and the companion first"
         while IFS= read -r rt; do revert_driver "$rt" winemac.so "$MARK"; done <<< "$rts"
         ;;
     "")
-        game_running && die "quit the game and EQBuddy first (winemac.so is in use)"
+        game_running && die "quit the game and the companion first (winemac.so is in use)"
         built=""
         while IFS= read -r rt; do
             so="$rt/$UNIXLIB/winemac.so"
@@ -84,7 +84,7 @@ case "${1:-}" in
             [ -n "$built" ] || { build_winemac "$so"; built="$BUILD/dlls/winemac.drv/winemac.so"; }
             install_driver "$rt" "$built" winemac.so "$MARK"
         done <<< "$rts"
-        log "done. Next: osxeql eqbuddy window (EQBuddy as its own window), then launch the game."
+        log "done. The companion's overlays now float over the fullscreen game (next launch)."
         ;;
     *) die "usage: engine/overlay.sh [--status|--revert]" ;;
 esac

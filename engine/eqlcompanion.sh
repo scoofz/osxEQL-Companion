@@ -4,8 +4,9 @@
 # EQ Legends Companion (github.com/jmoyers/everquest-companion, Josh Moyers) is a
 # Windows Electron app that reads EverQuest's /log: DPS meter and floating overlays,
 # Plane of Sky tracker, loot and item knowledge, AA/levels, raid targets, buff timers,
-# sound and voice alerts. It is the second companion osxEQL-Buddy can run, next to
-# EQBuddy Evolved (engine/eqbuddy.sh), with the same treatment:
+# sound and voice alerts.
+# osxEQL-Companion is built around it (the sister app osxEQL-Buddy does the same for
+# EQBuddy Evolved):
 #
 #   * install: official NSIS installer from the project's GitHub release, verified
 #     against the SHA-512 electron-builder publishes in latest.yml, run silently into
@@ -16,18 +17,18 @@
 #     background. (The app's own electron-updater checks the installer's Authenticode
 #     signature through PowerShell, which Wine doesn't have — ours replaces it.)
 #   * float over fullscreen: the patched winemac.so knob, written for its exe before
-#     it starts (engine/overlay.sh, same as EQBuddy).
+#     it starts (engine/overlay.sh).
 #   * hide when another app is in front / close with the game: the same macOS helper
-#     (engine/tools/eqbuddy-focus.swift) with --app for this exe, sounds off — Electron
+#     (engine/tools/companion-focus.swift) with --app for this exe, sounds off — Electron
 #     plays its own audio through Wine's CoreAudio driver, no bridge needed.
 #
 # The app itself already detects Wine and switches Chromium to the flags that paint in
 # a Wine prefix (its shared/wineDetect.ts, GitHub issue 28) — we change nothing in it.
-# Licence: FSL-1.1-MIT. osxEQL-Buddy never bundles it; it downloads the official
+# Licence: FSL-1.1-MIT. osxEQL-Companion never bundles it; it downloads the official
 # release on the player's request and runs it unmodified.
 #
-# Sourced after engine/eqbuddy.sh (shares the helper binary, autohide/autoclose
-# settings and the Wine environment). Mode file $OSXEQL_HOME/eqlc: window|off
+# Sourced after engine/companion.sh (helper binary, autohide/autoclose settings,
+# game-log tools). Mode file $OSXEQL_HOME/eqlc: window|off
 # (absent = not decided: the app asks once).
 
 EQLC_MODE_FILE="$OSXEQL_HOME/eqlc"
@@ -115,25 +116,22 @@ eqlc_update() {
 # Float over the fullscreen game: the patched driver's per-exe knob, written BEFORE the
 # app starts (the driver reads it at startup). No-op with a stock winemac.so.
 eqlc_sync_float() {
-    local log="$1" exe="$2" so
-    so="$(dirname "$WINE")/../lib/wine/x86_64-unix/winemac.so"
-    [ -f "$so.osxeql-overlay" ] || return 0
-    [ "$(shasum -a 256 "$so" 2>/dev/null | cut -d' ' -f1)" = "$(tr -cd '0-9a-f' < "$so.osxeql-overlay")" ] || return 0
+    local log="$1" exe="$2"
+    companion_overlay_patched || return 0
     "$WINE" reg add "HKCU\\Software\\Wine\\AppDefaults\\$(basename "$exe")\\Mac Driver" \
         /v LetTopmostWindowsFloatOverFullscreen /t REG_SZ /d Y /f >>"$log" 2>&1 \
         || echo "EQLC: could not write the Mac Driver knob" >>"$log"
 }
 
 eqlc_start_helper() {
-    local log="$1" bin ah=off ac
-    [ "$( [ -f "$OSXEQL_HOME/eqbuddy-helper" ] && tr -cd 'a-z' < "$OSXEQL_HOME/eqbuddy-helper")" = off ] && return 0
-    pgrep -qf 'eqbuddy-focus.*--app eq legends companion' && return 0
-    bin="$(eqbuddy_focus_bin "$log")" || return 0
-    [ "$(eqbuddy_autohide)" = on ] && ah=on
-    ac="$(eqbuddy_autoclose)"
+    local log="$1" bin ah ac
+    [ "$(companion_helper)" = on ] || { echo "EQLC: helper disabled (osxeql companion helper on)" >>"$log"; return 0; }
+    pgrep -qf 'companion-focus' && return 0
+    bin="$(companion_focus_bin "$log")" || return 0
+    ah="$(companion_autohide)"; ac="$(companion_autoclose)"
     echo "EQLC: helper $bin (autohide $ah, autoclose $ac)" >>"$log"
     nohup "$bin" --prefix "$WINEPREFIX" --app "eq legends companion" --app "everquest-companion" \
-        --sounds off --autohide "$ah" --autoclose "$ac" >>"$log" 2>&1 &
+        --autohide "$ah" --autoclose "$ac" >>"$log" 2>&1 &
 }
 
 eqlc_launch() {

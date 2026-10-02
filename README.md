@@ -1,38 +1,24 @@
-# osxEQL-Buddy
+# osxEQL-Companion
 
-**EverQuest Legends on Apple Silicon Macs — with [EQBuddy Evolved](https://github.com/DranakCorps-bot/EQBuddy),
-the session companion, running beside it as a real overlay.**
+**EverQuest Legends on Apple Silicon Macs — with [EQ Legends Companion](https://github.com/jmoyers/everquest-companion)
+running beside it: DPS meter, floating overlays, trackers and alerts, even over the fullscreen game.**
 
-osxEQL-Buddy is a fork of [sowoky/osxEQL](https://github.com/sowoky/osxEQL). It brings two
-projects together on the Mac and fixes what got in the way of playing with both:
+osxEQL-Companion is built on [sowoky/osxEQL](https://github.com/sowoky/osxEQL). It is the
+sister app of [osxEQL-Buddy](https://github.com/scoofz/osxEQL) (same runtime, same fixes,
+but for EQBuddy Evolved) — pick the companion you prefer, or install both: they share the
+same game install.
 
 | | What it is | Where it comes from |
 |---|---|---|
 | **osxEQL** | Runs the Windows game on macOS with open-source parts only: Wine built from CodeWeavers' published source + DXMT (DirectX 11 → Metal). No CrossOver, no proprietary D3DMetal. | [sowoky/osxEQL](https://github.com/sowoky/osxEQL) (MIT) — the base of this repo |
-| **EQBuddy Evolved** | An always-on-top widget that reads your EverQuest `/log` live: kills, DPS, loot, timers, buffs, quests, alerts… Windows-only. | [DranakCorps-bot/EQBuddy](https://github.com/DranakCorps-bot/EQBuddy) (proprietary — downloaded from its official release, never bundled) |
-| **EQ Legends Companion** | A DPS meter with floating overlays, Plane of Sky tracker, loot & item knowledge, AA/levels, raid targets, buff timers, sound and voice alerts — also from your `/log`. Windows-only (Electron). | [jmoyers/everquest-companion](https://github.com/jmoyers/everquest-companion) (FSL-1.1-MIT — downloaded from its official release, never bundled) |
-| **osxEQL-Buddy** | Installs, updates and runs EQBuddy and/or EQ Legends Companion *inside* osxEQL's Wine, makes it float over the fullscreen game, hide/close with it, play its sounds — and fixes osxEQL's fullscreen/mouse and Bluetooth-audio issues along the way. | This fork |
+| **EQ Legends Companion** | Reads your EverQuest `/log` live: DPS meter with floating overlays, Plane of Sky tracker, loot & item knowledge, AA/levels, raid targets, buff timers, sound and voice alerts. Windows-only (Electron). | [jmoyers/everquest-companion](https://github.com/jmoyers/everquest-companion) (FSL-1.1-MIT — downloaded from its official release, never bundled) |
+| **osxEQL-Companion** | Installs, updates and runs EQ Legends Companion *inside* osxEQL's Wine, lets its overlays float over the fullscreen game, hides/closes it with the game — and fixes osxEQL's fullscreen/mouse and Bluetooth-audio issues along the way. | This repo |
 
 > Unofficial, fan-made compatibility tool. **Not** affiliated with or endorsed by
-> Daybreak Game Company, Game Jawn, CodeWeavers, Apple, or the EQBuddy author. The
-> EverQuest Legends game is **not included** (you bring your own copy from the official
-> installer), and neither is EQBuddy Evolved (downloaded from its official release, on
-> your request).
-
----
-
-## Contents
-
-1. [Install (players)](#install-players)
-2. [What you get](#what-you-get)
-3. [How osxEQL runs the game](#how-osxeql-runs-the-game)
-4. [What EQBuddy Evolved does](#what-eqbuddy-evolved-does)
-5. [How the two run together](#how-the-two-run-together)
-6. [Improvements over osxEQL, in detail](#improvements-over-osxeql-in-detail)
-7. [Settings & command line](#settings--command-line)
-8. [Logs & troubleshooting](#logs--troubleshooting)
-9. [Known limits](#known-limits)
-10. [Build from source](#build-from-source-developers) · [Project layout](#project-layout) · [License & credits](#license--credits)
+> Daybreak Game Company, Game Jawn, CodeWeavers, Apple, or the EQ Legends Companion
+> author. The EverQuest Legends game is **not included** (you bring your own copy from the
+> official installer), and neither is EQ Legends Companion (downloaded from its official
+> release, on your request).
 
 ---
 
@@ -40,49 +26,47 @@ projects together on the Mac and fixes what got in the way of playing with both:
 
 **Requirements:** Apple Silicon Mac (M1 or newer), macOS 13+ (macOS 26 Tahoe supported);
 a Daybreak / EverQuest Legends account and the official **`EQLegends_setup.exe`**;
-~10 GB free disk; internet the first time if you want EQBuddy (≈55 MB).
+~10 GB free disk; internet the first time for EQ Legends Companion (≈140 MB).
 
-1. Download **`osxEQL-Buddy-<version>.dmg`** (1.0.0 is the first release) from this fork's [Releases](../../releases) page and
-   drag **osxEQL-Buddy** into **Applications**.
-   *Coming from osxEQL? Delete the old `osxEQL.app`: osxEQL-Buddy keeps the same data
+1. Download **`osxEQL-Companion-<version>.dmg`** from the [Releases](../../releases) page
+   and drag **osxEQL-Companion** into **Applications**.
+   *Coming from osxEQL or osxEQL-Buddy? Nothing to migrate: all three use the same data
    folder, `~/Library/Application Support/osxEQL`, so your prefix, 7 GB game client and
-   settings are reused as is.*
+   settings are reused as is. osxEQL-Buddy can stay installed next to it.*
 2. The release is **ad-hoc signed, not notarized by Apple**. Clear the quarantine flag
    once before the first launch (or right-click → **Open** the first time):
    ```bash
-   xattr -dr com.apple.quarantine /Applications/osxEQL-Buddy.app
+   xattr -dr com.apple.quarantine /Applications/osxEQL-Companion.app
    ```
 3. Download **`EQLegends_setup.exe`** from the official EverQuest Legends site.
-4. Launch **osxEQL-Buddy**. A setup window walks the whole install: pick the installer when
-   asked, then watch it run Daybreak's installer, update the launcher and download the
+4. Launch **osxEQL-Companion**. A setup window walks the whole install: pick the installer
+   when asked, then watch it run Daybreak's installer, update the launcher and download the
    game — a chime tells you when the login screen is ready. Log in, hit **Play**.
-5. On the next launch osxEQL asks **once** whether to install **EQBuddy Evolved**. Say yes:
-   from then on it opens with the game, stays up to date, and closes with it.
-   It then asks the same about **EQ Legends Companion** — take one, the other, or both.
+5. On the next launch the app asks **once** whether to install **EQ Legends Companion**.
+   Say yes: from then on it opens with the game, stays up to date, and closes with it.
 
 **Settings & troubleshooting, no Terminal needed:** hold **⌥ Option** while opening
-osxEQL-Buddy. A small list lets you switch EQBuddy and each of its extras on or off, **archive your
-EverQuest logs** (huge logs cause freezes — the app also warns you at launch), and
-**Collect diagnostics** puts a zip on your Desktop (logs, settings, Mac model — no
-passwords) to attach to a bug report. Press **Play** to start the game.
+osxEQL-Companion. A small list lets you switch EQ Legends Companion and each of its extras
+on or off, **archive your EverQuest logs** (huge logs cause freezes — the app also warns
+you at launch), and **Collect diagnostics** puts a zip on your Desktop (logs, settings, Mac
+model — no passwords) to attach to a bug report.
 
 Nothing else to install — no Homebrew, no Xcode, no Wine. The runtime (with the patched
-Mac and audio drivers) and the helpers ship inside the app.
+Mac and audio drivers) and the helper ship inside the app.
 
 ## What you get
 
 - **The game, natively on Apple Silicon**, through Wine + DXMT/Metal (from osxEQL).
 - **The game window sized to your display** — in-game fullscreen works and the mouse
-  reaches every pixel *(fixed in this fork)*.
+  reaches every pixel.
 - **Sound that follows your headphones** — Bluetooth headphones die → the speakers take
-  over at their own volume; connect others → the sound moves, no restart *(new)*.
-- **EQBuddy Evolved, fully integrated** *(new)*:
-  - installed with one click, **SHA-256 verified**, into the game's own Wine prefix — it
+  over at their own volume; connect others → the sound moves, no restart.
+- **EQ Legends Companion, fully integrated**:
+  - installed with one click, **SHA-512 verified**, into the game's own Wine prefix — it
     finds your logs with zero setup;
   - **kept up to date** automatically at each launch;
-  - **floats over the game, even fullscreen**;
+  - its **overlays float over the game, even fullscreen**;
   - **hides** when you switch to another app, **comes back** with the game;
-  - **alert sounds** play (on the Mac side);
   - **closes with the game**.
 
 ## How osxEQL runs the game
@@ -95,7 +79,7 @@ Mac and audio drivers) and the helpers ship inside the app.
 - **DXMT** ([3Shain/dxmt](https://github.com/3Shain/dxmt)) translates Direct3D 11 to
   **Metal** — the open-source alternative to Apple's proprietary D3DMetal.
 
-The runtime (Wine + DXMT + the libraries it needs) is embedded in `osxEQL-Buddy.app`. The Wine
+The runtime (Wine + DXMT + the libraries it needs) is embedded in `osxEQL-Companion.app`. The Wine
 *prefix* — a little Windows `C:\` drive — and the game client live in
 `~/Library/Application Support/osxEQL/`. On launch, the app starts Daybreak's
 **LaunchPad** inside a Wine **virtual desktop** (a single Mac window the game draws into;
@@ -104,64 +88,41 @@ run is a guided install (it also fixes a Daybreak installer path bug under Wine)
 Deep technical notes: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md),
 [`docs/JOURNEY.md`](docs/JOURNEY.md).
 
-## What EQBuddy Evolved does
-
-EQBuddy reads the log EverQuest writes for you (`/log`) — and the `/outputfile` dumps you
-ask the game for — and turns it into a live picture of your session. It never reads game
-memory and never measures other players. Highlights (see
-[its README](https://github.com/DranakCorps-bot/EQBuddy) for the full tour):
-
-- **Combat** — kills, DPS (in-combat and wall-clock), damage per skill with crit/miss
-  rates, healing, and a **fight timeline** drawing every swing of a pull on one canvas.
-- **Loot & money** — loot with your personal drop rates per mob, money and XP over time.
-- **Timers** — **spawn timers** that learn from your kills (with spawn-point circles on
-  the zone map), mez countdowns, **buff timers** that learn your character's real
-  durations, a **slow alert** with the cure attached.
-- **Gear** — a **Gear Locker** comparing every wearable you own per slot, backed by a
-  built-in catalog of **11,000+ items** (stats, quests, recipes, drop zones — offline).
-- **Quests** — a quest tracker that flags what you're ready to turn in, Plane of Sky and
-  epic checklists, raid targets with difficulty badges.
-- **Watch rules & alerts** — your own rules (substring or regex) with per-rule colors and
-  sounds; or click a recent log line to turn it into a rule.
-- **History** — every session in a local searchable database, level and AA charts.
-- **EQBuddy Mobile** — a phone or tablet on the same Wi-Fi becomes a second screen.
-
-EQBuddy Evolved is **Windows-only** and **proprietary** (© David Edwards). Its older 1.x
-line, which had native Linux/macOS builds, is MIT-licensed; a few small pieces of 1.x are
-reused here (see [License & credits](#license--credits)).
-
-### And EQ Legends Companion
+## What EQ Legends Companion does
 
 [EQ Legends Companion](https://github.com/jmoyers/everquest-companion) (Josh Moyers) reads
-the same log for a **live DPS meter** with fight history, **floating overlays** (damage or
-healing, per fight or per zone, click-through when locked), a **Plane of Sky tracker**,
-**loot and item knowledge** (what each item is for), **leveling & AA** history, **raid
-targets**, **buff timers** and **sound/voice alerts** with ~350 installable voice packs. It
-is a Windows Electron app (FSL-1.1-MIT) that already knows how to paint inside a Wine
-prefix. osxEQL-Buddy runs it the same way as EQBuddy — alongside it or instead of it.
+the log EverQuest writes for you (`/log`) and turns it into:
+
+- a **live DPS meter** with fight history, and **floating overlays** (damage or healing,
+  per fight or per zone, click-through when locked);
+- a **Plane of Sky tracker**, **loot and item knowledge** (what each item is for);
+- **leveling & AA** history, **raid targets**, **buff timers**;
+- **sound and voice alerts**, with ~350 installable voice packs.
+
+It is a Windows Electron app (FSL-1.1-MIT) that already knows how to paint inside a Wine
+prefix. See [its README](https://github.com/jmoyers/everquest-companion) for the full tour.
 
 ## How the two run together
 
 ```
-osxEQL-Buddy.app ─► Wine virtual desktop "osxEQL" ─► LaunchPad ──► eqgame.exe ──► writes /log
+osxEQL-Companion.app ─► Wine virtual desktop "osxEQL" ─► LaunchPad ─► eqgame.exe ─► writes /log
      │                                                                          │
-     ├─► (background) update check ──► EQBuddy.exe  ◄── reads the same /log ───┘
-     │                                  (own Mac window, same Wine prefix: sees it as C:\)
+     ├─► (background) update check ─► EQ Legends Companion.exe ◄── reads /log ──┘
+     │                                (own Mac windows, same Wine prefix: sees it as C:\)
      │
-     └─► eqbuddy-focus (small macOS helper)
-            • hides EQBuddy when another Mac app is in front, shows it with the game
-            • plays EQBuddy's alert sounds with afplay
-            • quits EQBuddy 20 s after the game closes
+     └─► companion-focus (small macOS helper)
+            • hides the companion when another Mac app is in front, shows it with the game
+            • quits it 20 s after the game closes
 
-Runtime drivers patched in this fork:
+Runtime drivers patched (shared with osxEQL-Buddy):
   winemac.so        → topmost windows may float over a fullscreen game (opt-in knob)
   winecoreaudio.so  → the game's sound follows the macOS default output
 ```
 
-Both programs share one Wine prefix, so EQBuddy finds the game's logs at the normal
-Windows location without configuration. EQBuddy runs as its **own Mac window** (not
-inside the game's virtual desktop), which is what lets it float over the game, be hidden,
-and sit on a second display.
+Both programs share one Wine prefix, so the companion finds the game's logs at the normal
+Windows location (`C:\Users\Public\Daybreak Game Company\…\EverQuest Legends`) without
+configuration. It runs as its **own Mac windows** (not inside the game's virtual desktop),
+which is what lets its overlays float over the game, be hidden, and sit on a second display.
 
 ## Improvements over osxEQL, in detail
 
@@ -188,37 +149,25 @@ unit, which follows the system default: headphones die → speakers, at their ow
 mute; connect other headphones → the sound moves to them. Streams opened on a specific
 device are unchanged; `OSXEQL_PIN_AUDIO_DEVICE=1` restores the old behaviour.
 
-### 3. EQBuddy Evolved, integrated
+### 3. EQ Legends Companion, integrated
 
 | Feature | How it works |
 |---|---|
-| **Install** | Downloads the official `EQBuddyEvolvedSetup.exe` from EQBuddy's GitHub release, **refuses it unless it matches the published `.sha256`**, and installs it silently into the game's prefix. |
-| **Starts with the game** | Started next to LaunchPad on every Play, as its own Mac window. |
-| **Always up to date** | At every launch, in the background (the game never waits), the latest release's published SHA-256 is compared with the one installed; a new release — or a missing EQBuddy — is downloaded, verified and installed. Offline: the installed copy starts as is. |
-| **Floats over fullscreen** | macOS keeps a fullscreen game above every normal "always on top" window. The bundled `winemac.so` carries a small opt-in patch (from EQBuddy 1.99.18, MIT) letting EQBuddy's windows sit above it. osxEQL-Buddy writes the driver setting *before* EQBuddy starts (the driver reads it at startup, so EQBuddy's own write only counted on its *next* launch) and turns on EQBuddy's `WineFloatOverFullscreen` option, which also keeps a click on the widget from pulling the game out of fullscreen. |
-| **Hides with the game** | EQBuddy's own "Hide when game unfocused" can't see the game (different Wine desktop). The `eqbuddy-focus` helper watches the frontmost Mac app instead and hides EQBuddy while you're elsewhere; EQBuddy's own option is switched off so the two don't fight. |
-| **Alert sounds** | EQBuddy plays alerts through WPF's media player, which can't play anything under this Wine (its WAV parser needs GStreamer, which the runtime doesn't ship) — every alert logged `0x80040218`. The helper watches EQBuddy's `error.log` and plays the sound with `afplay`, using the macOS sounds EQBuddy 1.x used natively (Ding→Ping, Notify→Glass, Chimes→Blow, Chord→Pop, Tada→Hero, Exclamation→Sosumi, Alarm→Submarine) at EQBuddy's alert volume; custom `.wav`/`.mp3` files in the prefix play as is. |
-| **Closes with the game** | 20 s after the game closes (enough for a quick relaunch from LaunchPad), the helper sends EQBuddy a normal macOS Quit, which it handles as a Windows shutdown — it saves and exits cleanly (forced only if it ignores that for 30 s). An EQBuddy you opened without the game is left alone. |
-
-### 3b. EQ Legends Companion, integrated the same way
-
-| Feature | How it works |
-|---|---|
-| **Install** | Reads the project's `latest.yml` from its GitHub release, downloads the installer it names, **refuses it unless it matches the published SHA-512**, and runs the one-click installer silently (`/S`) into the game's prefix. The app's own log discovery already looks at `C:\Users\Public\Daybreak Game Company\…\EverQuest Legends`, which is where the game writes in our prefix — no setup. |
+| **Install** | Reads the project's `latest.yml` from its GitHub release, downloads the installer it names, **refuses it unless it matches the published SHA-512**, and runs the one-click installer silently (`/S`) into the game's prefix. |
 | **Starts with the game** | Next to LaunchPad on every Play, as its own Mac window(s). |
-| **Always up to date** | `latest.yml`'s version vs. the installed one at every launch, in the background. (The app's built-in updater verifies installers through PowerShell, which Wine doesn't have — this replaces it.) |
-| **Overlays over fullscreen** | The same patched `winemac.so` knob as EQBuddy, written for its exe before it starts. |
-| **Hides / closes with the game** | The same macOS helper, run for this app (`--app "eq legends companion"`), sharing EQBuddy's *hide* and *close* settings. |
-| **Sounds & voice** | Nothing to do: Electron plays its own audio through Wine's CoreAudio driver (no GStreamer involved), and the headphone fix applies to it too. |
+| **Always up to date** | `latest.yml`'s version vs. the installed one at every launch, in the background (the game never waits); a missing install is reinstalled. The app's built-in updater verifies installers through PowerShell, which Wine doesn't have — this replaces it. Offline: the installed copy starts as is. |
+| **Overlays over fullscreen** | macOS keeps a fullscreen game above every normal "always on top" window. The bundled `winemac.so` carries a small opt-in patch (from EQBuddy 1.99.18, MIT) letting topmost windows sit above it; osxEQL-Companion turns it on for the companion's exe *before* it starts (the driver reads it at startup). |
+| **Hides with the game** | From inside Wine the companion can't see the game in front (different Wine desktop). The `companion-focus` helper watches the frontmost Mac app instead and hides the companion while you're elsewhere. |
+| **Closes with the game** | 20 s after the game closes (enough for a quick relaunch from LaunchPad), the helper sends it a normal macOS Quit, which Wine turns into a Windows shutdown — it saves and exits cleanly (forced only if it ignores that for 30 s). A companion you opened without the game is left alone. |
+| **Sounds & voice** | Nothing to do: Electron plays its own audio through Wine's CoreAudio driver, and the headphone fix applies to it too. |
 
 ### 4. Tooling
 - `osxeql overlay` / `osxeql audiofix` rebuild **only** the patched driver (`winemac.so` /
   `winecoreaudio.so`) from the same CrossOver source in a few minutes, with a backup and
   `--revert`; full `build-wine.sh` builds include both patches.
-- `osxeql winlevels` lists every on-screen window with its macOS window level — the tool
-  that turned "the widget is behind the game" into numbers.
-- The helper logs its decisions, every alert sound it plays, and the memory footprint of
-  itself, EQBuddy and the game (after 5 minutes, then hourly).
+- `osxeql winlevels` lists every on-screen window with its macOS window level.
+- The helper logs its decisions and the memory footprint of itself, the companion and the
+  game (after 5 minutes, then hourly).
 
 ## Settings & command line
 
@@ -227,26 +176,17 @@ In the app everything above is on by default. Each part can be switched from the
 `~/Library/Application Support/osxEQL/` and take effect at the next launch.
 
 ```bash
-engine/osxeql status                  # Wine, prefix, game, EQBuddy, overlay + audio patches
-engine/osxeql play                    # launch the game (+ EQBuddy)
-engine/osxeql res [max|auto|WxH]      # game window size (default: max = exact display)
+engine/osxeql status                    # Wine, prefix, game, companion, overlay + audio patches
+engine/osxeql play                      # launch the game (+ the companion)
+engine/osxeql res [max|auto|WxH]        # game window size (default: max = exact display)
 
-engine/osxeql eqbuddy                 # EQBuddy install, mode, autohide/close/update state
-engine/osxeql eqbuddy install         # download (SHA-256 checked) + install EQBuddy
-engine/osxeql eqbuddy update          # install the latest release now, if newer
-engine/osxeql eqbuddy window|desktop|off
-                                      # window (default) = own Mac window over the game;
-                                      # desktop = inside the game's Wine desktop (experimental);
-                                      # off = never start it
-engine/osxeql eqbuddy autohide on|off   # hide EQBuddy while another app is in front
-engine/osxeql eqbuddy autoclose on|off  # quit EQBuddy 20 s after the game closes
-engine/osxeql eqbuddy autoupdate on|off # update EQBuddy at every launch
 engine/osxeql eqlc                      # EQ Legends Companion: install state, version, latest
 engine/osxeql eqlc install|update       # install / update it now (SHA-512 checked)
 engine/osxeql eqlc window|off           # start it with the game, or not
 engine/osxeql eqlc autoupdate on|off    # update it at every launch (default on)
-engine/osxeql eqbuddy helper on|off     # diagnostic: off = no eqbuddy-focus helper at all
-                                        # (no autohide, alert sounds or autoclose)
+engine/osxeql companion autohide on|off # hide it while another app is in front
+engine/osxeql companion autoclose on|off # quit it 20 s after the game closes
+engine/osxeql companion helper on|off   # diagnostic: off = no companion-focus helper at all
 
 engine/osxeql overlay  [--status|--revert]   # winemac.so float-over-fullscreen patch
 engine/osxeql audiofix [--status|--revert]   # winecoreaudio.so follow-default-output patch
@@ -256,10 +196,9 @@ engine/osxeql logs [archive [MB]]            # EverQuest logs + sizes; archive b
 engine/osxeql winlevels [filter] [--delay N] # on-screen windows + macOS window levels
 ```
 
-If the CLI says `wine: not staged` (or stopped working after replacing `osxEQL.app` by
-`osxEQL-Buddy.app`), point it at the app's runtime:
+If the CLI says `wine: not staged`, point it at the app's runtime:
 ```bash
-ln -sfn /Applications/osxEQL-Buddy.app/Contents/Resources/Wine "$HOME/Library/Application Support/osxEQL/Wine"
+ln -sfn /Applications/osxEQL-Companion.app/Contents/Resources/Wine "$HOME/Library/Application Support/osxEQL/Wine"
 ```
 
 ## Logs & troubleshooting
@@ -269,47 +208,41 @@ All in `~/Library/Application Support/osxEQL/logs/`:
 | Log | What's in it |
 |---|---|
 | `app-launch.log`, `launch-*.log` | the game / LaunchPad |
-| `eqbuddy.log` | EQBuddy update check and start, helper decisions (show/hide/close), each alert sound played, memory lines |
-| `eqbuddy-install.log` | first EQBuddy install from the app |
-| `eqlc.log` | EQ Legends Companion: update check, install, start, its helper's decisions |
+| `eqlc.log` | EQ Legends Companion: update check, install, start, helper decisions (show/hide/close), memory lines |
 | `overlay-*.log`, `audiofix-build.log` | driver rebuilds |
 
-EQBuddy's own errors: `…/osxEQL/prefix/drive_c/users/<you>/AppData/Roaming/EQBuddy Evolved/error.log`.
+The companion's own errors: `…/osxEQL/prefix/drive_c/users/<you>/AppData/Roaming/everquest-companion/errors.log`
+(included in **Collect diagnostics**).
 
 - **Mouse offset / small picture in fullscreen** → `osxeql res max`, relaunch. Don't drag
   the window bigger mid-game (the render surface is fixed at launch).
-- **EQBuddy behind the fullscreen game** → `osxeql overlay --status` should say *patched*.
+- **Overlays behind the fullscreen game** → `osxeql overlay --status` should say *patched*.
 - **No game sound after headphones changed** → `osxeql audiofix --status`; opt out with
   `OSXEQL_PIN_AUDIO_DEVICE=1`.
 - **Freezes / micro-stutters that get worse over time → check your game log first.**
-  This is the #1 cause seen so far. With `/log` on, EverQuest appends every line of
-  chat and combat to one file per character and never trims it. After weeks of play it
-  can reach hundreds of MB, and EverQuest — and EQBuddy, which reads it live — start
-  hitching on every write. **Quit the game**, then open the game's `Logs` folder
-  (Finder → Go → Go to Folder…, paste):
+  With `/log` on, EverQuest appends every line of chat and combat to one file per
+  character and never trims it. After weeks of play it can reach hundreds of MB, and
+  EverQuest — and the companion, which reads it live — start hitching on every write.
+  **The app handles it:** at launch it warns when a log is over 100 MB and offers to
+  **Archive** it (moved to `Logs/archive/` with a date, never deleted); the ⌥ Option menu
+  has **Archive game logs** any time. CLI: `osxeql logs`, `osxeql logs archive`. By hand:
+  quit the game, open (Finder → Go → Go to Folder…)
   ```
   ~/Library/Application Support/osxEQL/prefix/drive_c/users/Public/Daybreak Game Company/Installed Games/EverQuest Legends/Logs
   ```
-  and **delete or move away the big `eqlog_<character>_<server>.txt`** (and `dbg.txt` if
-  it's huge too). EverQuest starts a fresh one next time you `/log`. EQBuddy keeps its
-  own session history, so nothing is lost there. Want to keep the old one? Move it to
-  your Desktop instead of deleting it.
-  **The app does this for you:** at launch it warns when a log is over 100 MB and offers
-  to **Archive** it (moved to `Logs/archive/` with a date, never deleted); the ⌥ Option
-  menu has **Archive game logs** any time. CLI: `osxeql logs`, `osxeql logs archive`.
-- **Micro-stutters in game** (log is small) → hold ⌥ Option while opening the app and try one session
-  with *EQBuddy: OFF*, then one with EQBuddy ON and *EQBuddy helper: OFF*. From the CLI,
-  the same bisect: play once with `osxeql eqbuddy off` (no EQBuddy),
-  once with `osxeql eqbuddy helper off` (EQBuddy without the helper). If the stutter
-  only comes with EQBuddy itself, try turning off EQBuddy's own "always on top" extras.
+  and move the big `eqlog_<character>_<server>.txt` away.
+- **Micro-stutters in game** (log is small) → hold ⌥ Option while opening the app and try
+  one session with *EQ Legends Companion: OFF*, then one with it ON and *Companion helper:
+  OFF*. CLI: `osxeql eqlc off`, then `osxeql companion helper off`.
+- **Blank or black companion window** → Electron renders through DXMT's Direct3D 11 under
+  Wine; send a **Collect diagnostics** zip with an issue.
 - **Something broke after a driver patch** → `osxeql overlay --revert` / `osxeql audiofix --revert`.
 
 ## Known limits
 
-- **Alert sound per rule:** EQBuddy's log line doesn't say which rule fired, so alerts play
-  the sound your sound-enabled rules share, or else EQBuddy's shared "Alert sound".
-- **Spoken alerts** (text-to-speech) stay silent: they need a Windows speech voice, which
-  Wine doesn't have.
+- **First release, lightly tested:** the install/update/hide/close plumbing is the one
+  proven with EQBuddy in osxEQL-Buddy, but EQ Legends Companion itself (Electron/Chromium
+  under Wine + DXMT) has had far less play time on the Mac. Reports welcome.
 - **No exclusive fullscreen:** "fullscreen" is the display-sized virtual desktop — which
   is also what keeps the mouse free across monitors.
 
@@ -317,9 +250,10 @@ EQBuddy's own errors: `…/osxEQL/prefix/drive_c/users/<you>/AppData/Roaming/EQB
 
 ```bash
 # 1. Compile the Wine runtime from CodeWeavers' LGPL source (~30-60 min, x86_64).
-#    Needs Xcode CLT + Intel Homebrew. Applies this fork's winemac overlay patch and
+#    Needs Xcode CLT + Intel Homebrew. Applies the winemac overlay patch and the
 #    CoreAudio follow-default edit. Stages to ~/…/osxEQL/Wine.cxbuild, then verify
 #    DXMT render and swap into ~/…/osxEQL/Wine.
+#    (Already have osxEQL-Buddy installed? Its runtime is identical: build-app.sh reuses it.)
 engine/build-wine.sh
 
 # 2. Stage DXMT into that wine tree + create a prefix.
@@ -329,24 +263,18 @@ engine/osxeql backend dxmt
 cd assets/icon && uv run python generate.py && \
   rsvg-convert -w 1024 -h 1024 icon.svg -o icon.png && bash build_icns.sh icon.png && cd ../..
 
-# 4. Runtime built before those patches? Rebuild just the two drivers (minutes;
-#    Xcode CLT + brew bison).
-engine/osxeql overlay
-engine/osxeql audiofix
+# 4. Assemble the self-contained app + DMG. build-app.sh also compiles the Swift helpers
+#    (setup window, companion-focus) and reports whether both driver patches are in.
+packaging/build-app.sh        # -> dist/osxEQL-Companion.app  (embeds the runtime)
+packaging/build-dmg.sh        # -> dist/osxEQL-Companion-<ver>.dmg
 
-# 5. Assemble the self-contained app + DMG. build-app.sh also compiles the Swift helpers
-#    (setup window, eqbuddy-focus) and reports whether both driver patches are in.
-packaging/build-app.sh        # -> dist/osxEQL-Buddy.app  (embeds the runtime)
-packaging/build-dmg.sh        # -> dist/osxEQL-Buddy-<ver>.dmg
-
-# 6. (Optional) Sign with a Developer ID for Gatekeeper-clean distribution.
-#    Set these env vars — secrets stay local, never in the repo:
+# 5. (Optional) Sign with a Developer ID for Gatekeeper-clean distribution.
 export CODESIGN_IDENTITY="Developer ID Application: ..."
 export NOTARIZE_KEY=~/path/to/AuthKey.p8
 export NOTARIZE_KEY_ID=<key-id>
 export NOTARIZE_ISSUER=<issuer-uuid>
-packaging/build-app.sh        # signs + notarizes instead of ad-hoc
-packaging/build-dmg.sh        # auto-detects signed app, notarizes DMG
+packaging/build-app.sh
+packaging/build-dmg.sh
 ```
 
 ### Prerequisites (building only — the release DMG needs none of this)
@@ -372,21 +300,20 @@ SDL2, …) into the app, so **end users don't need Homebrew**. Building from sou
 ## Project layout
 
 ```
-app/            launcher.sh (the app entry point + first-run wizard) + Info.plist
+app/            launcher.sh (the app entry point + first-run wizard + ⌥ menu) + Info.plist
 assets/icon/    icon source (generate.py / icon.svg) + AppIcon.icns + build_icns.sh
 engine/         headless CLI (osxeql) + numbered setup scripts + build-wine.sh
-  lib.sh        shared config, display sizing (resolve_size) + eqclient.ini pinning
-  eqbuddy.sh    EQBuddy install/update/launch, sounds, overlay + autohide settings
-                (also shipped in the .app)
-  overlay.sh    rebuild winemac.so with the float-over-fullscreen patch
-  audiofix.sh   rebuild winecoreaudio.so so sound follows the macOS default output
-  driverlib.sh  shared build/install/revert plumbing for overlay.sh + audiofix.sh
-  patches/      winemac-overlay.patch (EQBuddy 1.99.18, MIT), coreaudio-follow-default.py,
-                + upstream macdrv patch
-  tools/        eqbuddy-focus.swift (autohide, alert sounds, autoclose),
-                winlevels.m (window-level diagnostics)
+  lib.sh          shared config, display sizing (resolve_size) + eqclient.ini pinning
+  eqlcompanion.sh EQ Legends Companion install/update/launch (also shipped in the .app)
+  companion.sh    helper settings, game-log archiving (also shipped in the .app)
+  overlay.sh      rebuild winemac.so with the float-over-fullscreen patch
+  audiofix.sh     rebuild winecoreaudio.so so sound follows the macOS default output
+  driverlib.sh    shared build/install/revert plumbing for overlay.sh + audiofix.sh
+  patches/        winemac-overlay.patch (EQBuddy 1.99.18, MIT), coreaudio-follow-default.py,
+                  + upstream macdrv patch
+  tools/          companion-focus.swift (autohide, autoclose), winlevels.m
 packaging/      build-app.sh, build-dmg.sh, sign-and-notarize.sh, entitlements.plist,
-                verify-release.sh (check a signed DMG against this source)
+                verify-release.sh
 docs/           ARCHITECTURE / STATUS / JOURNEY / VISION (upstream osxEQL)
 ```
 
@@ -395,16 +322,14 @@ in git; the runtime ships inside the release DMG, the game client is your own.
 
 ## License & credits
 
-- **osxEQL** by [sowoky](https://github.com/sowoky/osxEQL) and **osxEQL-Buddy**'s additions:
-  **MIT** (see [`LICENSE`](LICENSE)).
-- **EQBuddy 1.99.18** (MIT, © David Edwards): the winemac overlay patch, `winlevels.m`, and
-  the macOS alert-sound mapping are reused from it.
-- **EQBuddy Evolved** is proprietary (© David Edwards) and is **not included**: osxEQL-Buddy
-  only downloads the official, signed release on your request and runs it unmodified.
+- **osxEQL** by [sowoky](https://github.com/sowoky/osxEQL), **osxEQL-Buddy** and
+  osxEQL-Companion's additions: **MIT** (see [`LICENSE`](LICENSE)).
+- **EQ Legends Companion** (© Josh Moyers, FSL-1.1-MIT) is **not included**:
+  osxEQL-Companion only downloads the official release on your request, verifies it, and
+  runs it unmodified.
+- **EQBuddy 1.99.18** (MIT, © David Edwards): the winemac overlay patch and `winlevels.m`
+  are reused from it.
 - **Wine** (LGPL-2.1) and **DXMT** (LGPL-2.1+) — see
   [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) for license texts and how to obtain and
-  rebuild the corresponding source (including this fork's two driver patches).
+  rebuild the corresponding source (including the two driver patches).
 - **EverQuest Legends** © Daybreak Game Company / Game Jawn. Not included, not affiliated.
-- Upstream osxEQL releases are signed by Skybound Solutions, LLC (code signing contributed
-  by [@skybound-raz](https://github.com/skybound-raz)); osxEQL-Buddy releases are ad-hoc
-  signed.

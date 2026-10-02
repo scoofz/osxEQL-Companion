@@ -47,11 +47,11 @@ case "${1:-}" in
         done <<< "$rts"
         ;;
     --revert)
-        game_running && die "quit the game and EQBuddy first"
+        game_running && die "quit the game and the companion first"
         while IFS= read -r rt; do revert_driver "$rt" "$SO" "$MARK"; done <<< "$rts"
         ;;
     "")
-        game_running && die "quit the game and EQBuddy first ($SO is in use)"
+        game_running && die "quit the game and the companion first ($SO is in use)"
         built=""
         while IFS= read -r rt; do
             [ -f "$rt/$UNIXLIB/$SO" ] || { warn "no $SO in $rt — skipping"; continue; }

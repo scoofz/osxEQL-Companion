@@ -1,4 +1,11 @@
-# osxEQL — project rules (read this first)
+# osxEQL-Companion — project rules (read this first)
+
+> **This repo is osxEQL-Companion:** osxEQL (below) + EQ Legends Companion
+> (jmoyers/everquest-companion) installed, updated and run with the game —
+> `engine/eqlcompanion.sh`, `engine/companion.sh`, `engine/tools/companion-focus.swift`.
+> Sister project: osxEQL-Buddy (same runtime, EQBuddy Evolved instead). Both apps share
+> `~/Library/Application Support/osxEQL/` and its prefix; their settings files differ
+> (`eqlc*`, `companion-*`).
 
 **What this is:** a macOS app that runs **EverQuest Legends** on Apple Silicon using
 **open-source Wine + DXMT** (DirectX 11 → Metal). Goal: fully open-source and shareable,
@@ -22,8 +29,8 @@ Metal view to the Wine window. Stock Wine doesn't export it; CrossOver's build a
 patched Wine do. **That symbol is the crux of this whole project.**
 
 ## Where everything lives
-- **The app:** `/Applications/osxEQL-Buddy.app` (osxEQL-Buddy 1.0+; `osxEQL.app` before
-  the fork's rename — scripts accept either) — double-click → Daybreak LaunchPad → log in →
+- **The app:** `/Applications/osxEQL-Companion.app` (scripts also accept an installed
+  `osxEQL-Buddy.app` or `osxEQL.app`: same runtime) — double-click → Daybreak LaunchPad → log in →
   Play → game renders via DXMT. Since v0.2.1 the bundle also carries the Homebrew dylibs
   wine dlopens (`Wine/lib/lib*.dylib`, staged by `packaging/bundle-dylibs.sh`), so the DMG
   runs on Macs with no Intel Homebrew.

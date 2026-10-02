@@ -1,27 +1,21 @@
-// eqbuddy-focus — hide EQBuddy while EverQuest isn't the frontmost app, macOS side.
+// companion-focus — the macOS side of osxEQL-Companion's companion app.
 //
-// EQBuddy's own "Hide when game unfocused" asks Windows (GetForegroundWindow) which
-// window is in front. Under osxEQL the game lives in its own Wine virtual desktop
-// (explorer /desktop=osxEQL) while EQBuddy (window mode) is a separate Mac window
-// outside it, and EQBuddy never sees eqgame.exe as the foreground: the option
-// either never fires or keeps the widget hidden. The truth is on the Mac side, where
-// every Wine process is its own Mac app — so this helper watches which Mac app is
-// frontmost and hides / unhides EQBuddy's app (NSRunningApplication.hide/unhide:
-// no Accessibility permission needed).
+// EQ Legends Companion runs inside osxEQL's Wine, as its own Mac app. From in there it
+// can't see the game in front (the game lives in a separate Wine virtual desktop) and
+// it doesn't know when the game closes. This helper watches the frontmost Mac app and:
+//   * hides the companion while another Mac app is in front, shows it with the game
+//     (NSRunningApplication.hide/unhide: no Accessibility permission needed);
+//   * quits it 20 s after the game closes (see "Auto-close" in update()).
+// Event-driven only: NSWorkspace notifications + one-shot deadlines, no polling.
 //
-// Shown when: the game isn't running, or the frontmost app is the game (eqgame.exe,
-// or the osxEQL virtual-desktop explorer that hosts it) or EQBuddy itself.
-// Hidden otherwise. Only un-hides what it hid. Exits when EQBuddy exits.
+// Derived from osxEQL-Buddy's eqbuddy-focus helper. Its optional alert-sound bridge
+// (--sounds on; for apps whose own player can't play under this Wine) is kept but off:
+// EQ Legends Companion plays its own audio.
 //
-// Second job — alert SOUNDS (see "Alert sounds" below): EQBuddy's WPF MediaPlayer
-// cannot play anything under osxEQL's Wine, so the sound is played here with afplay.
-//
-// Third job — close EQBuddy with the game (see "Auto-close" in update()).
-//
-// Usage: eqbuddy-focus --prefix <WINEPREFIX> [--app <needle>]... [--sounds on|off]
-//                      [--autohide on|off] [--autoclose on|off]
-// Started by engine/eqbuddy.sh next to EQBuddy. Built by packaging/build-app.sh into
-// the .app, or on first use by the engine.
+// Usage: companion-focus --prefix <WINEPREFIX> [--app <needle>]... [--sounds on|off]
+//                        [--autohide on|off] [--autoclose on|off]
+// Started by engine/eqlcompanion.sh. Built by packaging/build-app.sh into the .app,
+// or on first use by the engine.
 import AppKit
 
 let cliArgs = CommandLine.arguments
@@ -31,8 +25,7 @@ func option(_ name: String) -> String? {
 }
 let autohide = (option("--autohide") ?? "on") != "off"
 /// The companion app(s) this helper looks after: every `--app <needle>` (matched, lower
-/// case, against a process's name + argv). Default: EQBuddy. One helper per companion —
-/// EQ Legends Companion runs its own with --app "eq legends companion" --sounds off.
+/// case, against a process's name + argv). Default: EQ Legends Companion.
 let targets: [String] = {
     var out: [String] = []
     var i = 1
@@ -40,10 +33,11 @@ let targets: [String] = {
         if cliArgs[i] == "--app", i + 1 < cliArgs.count { out.append(cliArgs[i + 1].lowercased()); i += 1 }
         i += 1
     }
-    return out.isEmpty ? ["eqbuddy.exe"] : out
+    return out.isEmpty ? ["eq legends companion", "everquest-companion"] : out
 }()
-/// Alert-sound bridge (EQBuddy only: its WPF player can't play under this Wine).
-let soundsOn = (option("--sounds") ?? "on") != "off"
+/// Alert-sound bridge, inherited from osxEQL-Buddy (the companion's WPF player can't play
+/// under this Wine). Off here: EQ Legends Companion plays its own audio.
+let soundsOn = (option("--sounds") ?? "off") == "on"
 /// Every companion counts as "game side": switching from the game to one of them must
 /// not hide the other.
 let knownCompanions = ["eqbuddy.exe", "eq legends companion", "everquest-companion"]
@@ -80,10 +74,10 @@ func isGameSide(_ s: String) -> Bool {
         || knownCompanions.contains(where: { s.contains($0) }) || targets.contains(where: { s.contains($0) })
 }
 
-/// One line per decision, to logs/eqbuddy.log (stdout is redirected there).
+/// One line per decision, to logs/eqlc.log (stdout is redirected there).
 func note(_ s: String) {
     let t = ISO8601DateFormatter().string(from: Date())
-    print("eqbuddy-focus \(t) \(s)")
+    print("companion-focus \(t) \(s)")
     fflush(stdout)
 }
 
@@ -94,7 +88,7 @@ let started = Date()
 var sawGame = false
 var gameGoneSince: Date? = nil
 var quitAskedAt: Date? = nil
-/// How long the game must stay gone before EQBuddy is closed: covers a quick
+/// How long the game must stay gone before the companion is closed: covers a quick
 /// relaunch from LaunchPad (and the gap while eqgame restarts) without closing it.
 let closeGrace: TimeInterval = 20
 
@@ -102,9 +96,9 @@ func update(front: NSRunningApplication?) {
     let apps = NSWorkspace.shared.runningApplications
     let buddies = apps.filter { a in let id = ident(a); return targets.contains(where: { id.contains($0) }) }
     if buddies.isEmpty {
-        // Give EQBuddy time to start; after that, no EQBuddy = nothing left to do.
+        // Give the companion time to start; after that, no companion = nothing left to do.
         if sawBuddy || Date().timeIntervalSince(started) > 120 {
-            note("EQBuddy not running — exiting")
+            note("companion not running — exiting")
             exit(0)
         }
         return
@@ -116,12 +110,12 @@ func update(front: NSRunningApplication?) {
     let state = "front=[\(frontIdent.prefix(160))] game=\(gameUp) buddies=\(buddies.map { $0.processIdentifier }) -> \(show ? "show" : "hide")"
     if state != lastState { note(state); lastState = state }
 
-    // ---- Auto-close: the game was running and is gone for closeGrace -> quit EQBuddy.
-    // Only once the game has been seen in THIS session, so an EQBuddy opened on its
+    // ---- Auto-close: the game was running and is gone for closeGrace -> quit the companion.
+    // Only once the game has been seen in THIS session, so an companion opened on its
     // own (no game) is never closed. Graceful first: terminate() is a normal macOS
-    // "Quit", which Wine's Mac driver turns into a Windows end-of-session, so EQBuddy
+    // "Quit", which Wine's Mac driver turns into a Windows end-of-session, so the app
     // shuts down cleanly and saves its settings. Forced only if it ignores that for
-    // 30 s. The helper then exits on its own (no EQBuddy left).
+    // 30 s. The helper then exits on its own (no companion left).
     // No polling tick: the deadlines below re-run update() themselves (wakeAfter).
     if gameUp {
         sawGame = true; gameGoneSince = nil; quitAskedAt = nil
@@ -132,14 +126,14 @@ func update(front: NSRunningApplication?) {
         if Date().timeIntervalSince(gone) >= closeGrace {
             if let asked = quitAskedAt {
                 if Date().timeIntervalSince(asked) > 30 {
-                    note("EQBuddy ignored Quit for 30 s — forcing it closed")
+                    note("companion ignored Quit for 30 s — forcing it closed")
                     buddies.forEach { _ = $0.forceTerminate() }
                     quitAskedAt = Date()   // don't spam; its termination wakes us
                     wakeAfter(31)
                 }
             } else {
                 wakeAfter(30.5)            // check whether the Quit was honoured
-                note("game closed \(Int(closeGrace)) s ago — quitting EQBuddy")
+                note("game closed \(Int(closeGrace)) s ago — quitting the companion")
                 // Un-hide first: a hidden Wine app may not process the quit request.
                 buddies.forEach { if hiddenByUs.contains($0.processIdentifier) { $0.unhide() }; _ = $0.terminate() }
                 hiddenByUs.removeAll()
@@ -183,7 +177,7 @@ nc.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object:
         update(front: nil)
     }
 }
-// ---- Alert sounds -----------------------------------------------------------------
+// ---- Alert sounds (osxEQL-Buddy legacy; only with --sounds on) -----------------------------------------------------------------
 // EQBuddy plays alerts through WPF's MediaPlayer -> Wine's wmp -> DirectShow. Wine's
 // WAV parser lives in winegstreamer, and osxEQL's Wine is built without GStreamer, so
 // every play fails: "Alert sound could not be played: 0x80040218"
@@ -300,8 +294,8 @@ func pollErrorLogs() {
 // unfreed, 5 polls a second for hours — the prime suspect for the Mac slowing to a
 // freeze after long sessions (reported 2026-09-30).
 //
-// Hourly, the helper logs the memory footprint of itself, EQBuddy and the game, so a
-// growing process shows up in logs/eqbuddy.log instead of being guessed at.
+// Hourly, the helper logs the memory footprint of itself, the companion and the game, so a
+// growing process shows up in logs/eqlc.log instead of being guessed at.
 func footprintMB(_ pid: pid_t) -> Int {
     var info = rusage_info_v2()
     let r = withUnsafeMutablePointer(to: &info) { ptr in
@@ -321,7 +315,7 @@ func logMemory() {
 
 // ---- Watching error.log without polling ------------------------------------------
 // A kqueue vnode source per error.log (DispatchSource): the kernel wakes us only when
-// EQBuddy writes to it — i.e. only when an alert actually wants a sound. A file that
+// the companion writes to it — i.e. only when an alert actually wants a sound. A file that
 // doesn't exist yet (first run), or was rotated/deleted, is (re)armed by a slow 30 s
 // check that only stats a couple of paths. Replaces the 0.5 s poll + 2 s tick that
 // were suspected of game micro-stutters (user report, 2026-10).
@@ -358,7 +352,7 @@ if soundsOn {
     Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in autoreleasepool { armWatchers(); pollErrorLogs() } }
 }
 
-wakeAfter(121)   // EQBuddy never showed up within the startup grace -> exit
+wakeAfter(121)   // the companion never showed up within the startup grace -> exit
 Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { _ in autoreleasepool { logMemory() } }
 Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { _ in autoreleasepool { logMemory() } }
 note("started (pid \(getpid()), apps \(targets), sounds \(soundsOn ? "on" : "off"), autohide \(autohide ? "on" : "off"), autoclose \(autoclose ? "on" : "off"), prefix \(prefix ?? "-"))")
